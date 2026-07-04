@@ -2,6 +2,7 @@ import { createResource } from '@/lib/actions/resources';
 import {
   convertToModelMessages,
   createUIMessageStreamResponse,
+  isStepCount,
   streamText,
   tool,
   toUIMessageStream,
@@ -25,6 +26,7 @@ export async function POST(req: Request) {
     Only respond to questions using information from tool calls.
     if no relevant information is found in the tool calls, respond, "Sorry, I don't know."`,
     messages: await convertToModelMessages(messages),
+    stopWhen: isStepCount(5),
     tools: {
       addResource: tool({
         description: `add a resource to your knowledge base.
