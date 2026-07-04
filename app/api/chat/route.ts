@@ -1,4 +1,4 @@
-import { createResource } from '@/lib/actions/resources';
+import { createResource } from "@/lib/actions/resources";
 import {
   convertToModelMessages,
   createUIMessageStreamResponse,
@@ -7,12 +7,13 @@ import {
   tool,
   toUIMessageStream,
   UIMessage,
-} from 'ai';
-import { z } from 'zod';
-import { createAmazonBedrock  } from "@ai-sdk/amazon-bedrock";
+} from "ai";
+import { z } from "zod";
+import { createAmazonBedrock } from "@ai-sdk/amazon-bedrock";
+import { findRelevantContent } from "@/lib/ai/embedding";
 
 const bedrockMantle = createAmazonBedrock({
-  region: 'us-east-1'
+  region: "us-east-1",
 });
 
 export const maxDuration = 30;
@@ -34,9 +35,17 @@ export async function POST(req: Request) {
         inputSchema: z.object({
           content: z
             .string()
-            .describe('the content or resource to add to the knowledge base'),
+            .describe("the content or resource to add to the knowledge base"),
         }),
         execute: async ({ content }) => createResource({ content }),
+      }),
+      getInformation: tool({
+        description:
+          "get information from your knowledge base to answer questions",
+        inputSchema: z.object({
+          question: z.string().describe("the users question"),
+        }),
+        execute: async ({ question }) => findRelevantContent(question),
       }),
     },
   });
